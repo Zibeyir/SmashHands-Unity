@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if (!GameManager.Instance.GameRunning) return;
-
+        if (entity.IsAttacking) return;
         Vector2 moveAxis = Vector2.zero;
 
         // 🖱️ Mouse-dan istiqamət

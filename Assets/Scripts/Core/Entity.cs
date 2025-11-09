@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -11,17 +12,19 @@ public class Entity : MonoBehaviour, IDamageable
     public CircleCollider2D bodyCollider;
     public Hitbox punchHitbox; // child object, disabled by default
 
+    string GenerateName() => $"Bot_{Random.Range(100, 999)}";
 
     [Header("State")]
     public Stats stats = new Stats();
     public bool isPlayer;
 
     [Header("Attack Settings")]
-    private float attackRange = 2.8f;
-    private float attackCooldown = 2f;
-    private float attackDashForce = 7f;
-    private float knockbackForce = 14f;
+    private float attackRange = 3f;
+    private float attackCooldown = 1.2f;
+    private float attackDashForce = 20;
+    private float knockbackForce = 30f;
     private float _lastAttackTime;
+    [HideInInspector] public bool IsAttacking=false;
 
     [Header("World UI")]
     public Slider attackBar;    // Prefab üzərindən bağlanacaq
@@ -88,19 +91,20 @@ public class Entity : MonoBehaviour, IDamageable
 
     IEnumerator AttackRoutine()
     {
+        IsAttacking = true;
         // Ən yaxın düşməni tap
-        var target = GameManager.Instance.FindNearestEnemy(this, attackRange * 150f);
+        var target = GameManager.Instance.FindNearestEnemy(this, attackRange);
 
         Vector2 dir = Vector2.zero;
 
         if (target)
         {
-            dir = (target.position - transform.position).normalized;
+            dir = transform.right; // rotation yönü ilə eyni (sprite up istiqaməti)
         }
         else
         {
             // 🧭 Əgər düşmən yoxdursa, son baxdığı və ya hərəkət etdiyi istiqamətdə hücum etsin
-            dir = transform.up; // rotation yönü ilə eyni (sprite up istiqaməti)
+            dir = transform.right; // rotation yönü ilə eyni (sprite up istiqaməti)
         }
 
         // 🔹 Hər halda bir az qabağa getsin (dash effekti)
@@ -111,36 +115,43 @@ public class Entity : MonoBehaviour, IDamageable
         // Əgər target var və məsafə uyğundursa, vur
         if (target)
         {
-            float dist = Vector2.Distance(transform.position, target.position);
-            if (dist <= attackRange)
-            {
-                var other = target.GetComponent<Entity>();
-                if (other && !GameManager.Instance.IsFriendly(this, other))
-                    ApplyHit(other, dir);
-            }
+            bodyCollider.enabled = false;
+            bodyCollider.enabled = true;
+            //float dist = Vector2.Distance(transform.position, target.position);
+            //if (dist <= attackRange)
+            //{
+            //    var other = target.GetComponent<Entity>();
+            //    if (other && !GameManager.Instance.IsFriendly(this, other))
+            //        ApplyHit(other, dir);
+            //}
         }
 
         AudioManager.PlaySFX("punch");
+        yield return new WaitForSeconds(0.6f); // qısa animasiya vaxtı
+        IsAttacking = false;
     }
 
     IEnumerator DashForward(Vector2 dir)
     {
-        float dashTime = 0.2f;         // nə qədər müddət irəli getsin
+        float dashTime = 0.7f;         // nə qədər müddət irəli getsin
         float dashSpeed = attackDashForce;  // nə qədər güclü getsin
         float t = 0f;
-
+        rb.AddForce(dir * dashSpeed * 2f, ForceMode2D.Impulse);
+        Debug.Log("Attack "+(dir * dashSpeed * 2f));
         while (t < dashTime)
         {
-            rb.linearVelocity = dir * dashSpeed;
+            //rb.linearVelocity = dir * dashSpeed;
             t += Time.deltaTime;
             yield return null;
         }
 
-        rb.linearVelocity = Vector2.zero; // dayan
+        //rb.linearVelocity = Vector2.zero; // dayan
     }
 
-    void ApplyHit(Entity other, Vector2 dir)
+    void ApplyHit(Entity other)
     {
+        Vector2 dir = (other.gameObject.transform.position - transform.position).normalized;
+
         // Zərbə gücü səviyyəyə görə
         float dmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
         float knock = knockbackForce * Mathf.Sqrt(stats.mass);
@@ -153,20 +164,18 @@ public class Entity : MonoBehaviour, IDamageable
     }
 
     public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
-    //void OnCollisionEnter2D(Collision2D collision)
-    //{
-    //    if (!GameManager.Instance.GameRunning) return;
-    //    if (collision.collider == null) return;
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!GameManager.Instance.GameRunning) return;
+        if (collision.collider == null) return;
+        if (!IsAttacking) return;
+        var other = collision.collider.GetComponent<Entity>();
+        if (other == null) return;
 
-    //    var other = collision.collider.GetComponent<Entity>();
-    //    if (other == null) return;
-    //    if (GameManager.Instance.IsFriendly(this, other)) return;
-    //    if (other == this) return;
-    //    if (Time.time < _lastAttackTime + attackCooldown) return;
+        ApplyHit(other);
+        // Damage yalnız əgər zərbə cooldown bitibsə
 
-    //    // Damage yalnız əgər zərbə cooldown bitibsə
-
-    //}
+    }
 
 
     void UpdateRadius()
@@ -263,5 +272,4 @@ public class Entity : MonoBehaviour, IDamageable
     }
 
 
-    string GenerateName() => $"Bot_{Random.Range(100, 999)}";
 }

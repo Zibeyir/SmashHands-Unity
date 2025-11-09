@@ -17,7 +17,7 @@ public class BotController : MonoBehaviour
 
     // Tənzimlənən parametrlər (balans üçün)
     [Header("AI Settings")]
-    private float visionRange = 10f;        // düşməni hiss etmə məsafəsi
+    private float visionRange = 3f;        // düşməni hiss etmə məsafəsi
     private float attackDistance = 2.8f;    // hücum məsafəsi
     private float decisionIntervalMin = 0.4f;
     private float decisionIntervalMax = 1.2f;
@@ -92,6 +92,7 @@ public class BotController : MonoBehaviour
     void FixedUpdate()
     {
         if (!GameManager.Instance.GameRunning) return;
+        if (entity.IsAttacking) return;
 
         // Hərəkət
         Vector2 velocity = moveDir.normalized * entity.stats.speed * (entity.boostSpeed2xActive ? 2f : 1f);
