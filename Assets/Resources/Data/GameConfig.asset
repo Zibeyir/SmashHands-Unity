@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af41c9c26753e8b48b350f09db7be331, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  matchDurationSeconds: 900
+  initialBotCount: 30
+  arenaSize: {x: 500, y: 500}
+  gridSpacing: 50
+  baseHP: 100
+  baseSpeed: 9
+  baseMass: 20
+  playerPrefab: {fileID: 4865624633025556457, guid: e1825580a539fe741aae5e4530ceee30, type: 3}
+  botPrefab: {fileID: 3672884068893331396, guid: db9f20b04fcada4428c66cf07173d8c3, type: 3}
+  xpOrbPrefab: {fileID: 5089729149011861035, guid: 7b7d91388fb6dc74f99435eba19468b5, type: 3}
+  coinPrefab: {fileID: 4740998817288117008, guid: 884cc9097887c9a46835e9e1f034f909, type: 3}
+  boostSpeedPrefab: {fileID: 3339578627975762476, guid: dd1ce83d4845d294c860367348f984be, type: 3}
+  boostBeat2xPrefab: {fileID: 4334779387980959601, guid: 733e0b3f8d9604948b202efc736a6f53, type: 3}
+  startXPOrbs: 80
+  startCoins: 30
+  startBoosts: 8
+  levelHandSprites:
+  - {fileID: -2774552261298852055, guid: cf477d2f11a8bde4c9bd7182694a24fa, type: 3}
+  - {fileID: 2070752126991230050, guid: 521cc4770933578419403d29dd8b9db6, type: 3}
+  - {fileID: 4438862924884992466, guid: 970d66555dcaaab42b6e4f320fb429d5, type: 3}
+  - {fileID: -273458660609205183, guid: bd76d20e01dea5b4a93f8d8613aa477e, type: 3}
+  - {fileID: 8725880378342791703, guid: 9e40f002a77c97b49839a3517419c8c5, type: 3}
+  - {fileID: 4909004550138682619, guid: fa4dd4766aeeff342a272d86399e4c29, type: 3}
+  - {fileID: -864655193939787527, guid: cdeaf72c07efe6e4cae7128022db7732, type: 3}
+  - {fileID: -8004741819778333, guid: 9fc6352a13f46434e9a62f3a8694f94c, type: 3}
+  - {fileID: -3515588515358922755, guid: 6004476a035ab7e4392caa83e5935a63, type: 3}
+  - {fileID: -6903920085607507803, guid: 60d5c6bc3521d3544befaccdde39d22d, type: 3}

@@ -1,0 +1,1 @@
+﻿public enum GameMode { Deathmatch, TeamArena }
