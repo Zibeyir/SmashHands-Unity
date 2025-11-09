@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -15,12 +16,16 @@ public class Entity : MonoBehaviour, IDamageable
     public Stats stats = new Stats();
     public bool isPlayer;
 
+    [Header("Attack Settings")]
+    private float attackRange = 2.8f;
+    private float attackCooldown = 2f;
+    private float attackDashForce = 7f;
+    private float knockbackForce = 14f;
+    private float _lastAttackTime;
 
-    [Header("Punch")]
-    public float punchCooldown = 0.6f;
-    public float punchRangeExtra = 40f; // range = radius + extra
-    float _lastPunchTime;
-
+    [Header("World UI")]
+    public Slider attackBar;    // Prefab üzərindən bağlanacaq
+    private Coroutine _attackRoutine;
 
     [Header("Runtime")]
     public bool boostDamage2xActive;
@@ -51,47 +56,122 @@ public class Entity : MonoBehaviour, IDamageable
         UpdateRadius();
     }
 
-    [SerializeField] float hitCooldown = 0.5f;
-    float _lastHitTime;
-
-    void ApplyHitTo(Entity other)
+    public void TryAttack()
     {
-        float dmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
-        float knock = 1280f * Mathf.Sqrt(stats.mass) / 7f;
+        if (Time.time < _lastAttackTime + attackCooldown) return;
+        _lastAttackTime = Time.time;
+        StartCoroutine(AttackRoutine());
+        if (attackBar)
+        {
+            if (_attackRoutine != null)
+                StopCoroutine(_attackRoutine);
+            _attackRoutine = StartCoroutine(FillAttackBar());
+        }
+    }
+    IEnumerator FillAttackBar()
+    {
+        attackBar.gameObject.SetActive(true);
+        attackBar.value = 0f;
 
-        // Zərər vur
-        other.TakeDamage(dmg, this);
+        float t = 0f;
+        while (t < attackCooldown)
+        {
+            t += Time.deltaTime;
+            attackBar.value = Mathf.Clamp01(t / attackCooldown);
+            yield return null;
+        }
 
-        // Knockback istiqaməti
-        Vector2 dir = (other.transform.position - transform.position).normalized;
-        other.rb.AddForce(dir * knock, ForceMode2D.Impulse);
+        attackBar.value = 1f;
+        yield return new WaitForSeconds(0.1f);
+        attackBar.gameObject.SetActive(false);
+    }
 
-        // Sadə səs və vizual effekt
+    IEnumerator AttackRoutine()
+    {
+        // Ən yaxın düşməni tap
+        var target = GameManager.Instance.FindNearestEnemy(this, attackRange * 150f);
+
+        Vector2 dir = Vector2.zero;
+
+        if (target)
+        {
+            dir = (target.position - transform.position).normalized;
+        }
+        else
+        {
+            // 🧭 Əgər düşmən yoxdursa, son baxdığı və ya hərəkət etdiyi istiqamətdə hücum etsin
+            dir = transform.up; // rotation yönü ilə eyni (sprite up istiqaməti)
+        }
+
+        // 🔹 Hər halda bir az qabağa getsin (dash effekti)
+        StartCoroutine(DashForward(dir));
+
+        yield return new WaitForSeconds(0.05f); // zərbə anı
+
+        // Əgər target var və məsafə uyğundursa, vur
+        if (target)
+        {
+            float dist = Vector2.Distance(transform.position, target.position);
+            if (dist <= attackRange)
+            {
+                var other = target.GetComponent<Entity>();
+                if (other && !GameManager.Instance.IsFriendly(this, other))
+                    ApplyHit(other, dir);
+            }
+        }
+
         AudioManager.PlaySFX("punch");
     }
 
-    public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
-    void OnCollisionEnter2D(Collision2D collision)
+    IEnumerator DashForward(Vector2 dir)
     {
-        if (!GameManager.Instance.GameRunning) return;
-        if (collision.collider == null) return;
+        float dashTime = 0.2f;         // nə qədər müddət irəli getsin
+        float dashSpeed = attackDashForce;  // nə qədər güclü getsin
+        float t = 0f;
 
-        var other = collision.collider.GetComponent<Entity>();
-        if (other == null) return;
-        if (GameManager.Instance.IsFriendly(this, other)) return;
-        if (other == this) return;
+        while (t < dashTime)
+        {
+            rb.linearVelocity = dir * dashSpeed;
+            t += Time.deltaTime;
+            yield return null;
+        }
 
-        // Damage yalnız əgər zərbə cooldown bitibsə
-        if (Time.time < _lastHitTime + hitCooldown) return;
-        _lastHitTime = Time.time;
-
-        ApplyHitTo(other);
+        rb.linearVelocity = Vector2.zero; // dayan
     }
+
+    void ApplyHit(Entity other, Vector2 dir)
+    {
+        // Zərbə gücü səviyyəyə görə
+        float dmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
+        float knock = knockbackForce * Mathf.Sqrt(stats.mass);
+
+        // HP azaldır
+        other.TakeDamage(dmg, this);
+
+        // 🔹 Vurulanı geriyə at
+        other.rb.AddForce(dir * knock*2f, ForceMode2D.Impulse);
+    }
+
+    public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
+    //void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    if (!GameManager.Instance.GameRunning) return;
+    //    if (collision.collider == null) return;
+
+    //    var other = collision.collider.GetComponent<Entity>();
+    //    if (other == null) return;
+    //    if (GameManager.Instance.IsFriendly(this, other)) return;
+    //    if (other == this) return;
+    //    if (Time.time < _lastAttackTime + attackCooldown) return;
+
+    //    // Damage yalnız əgər zərbə cooldown bitibsə
+
+    //}
 
 
     void UpdateRadius()
     {
-        if (bodyCollider) bodyCollider.radius = Radius * 0.01f; // scale to pixels->meters if sprites are pixels
+        //if (bodyCollider) bodyCollider.radius = Radius * 0.01f; // scale to pixels->meters if sprites are pixels
         transform.localScale = Vector3.one * (Radius / 16f);
     }
 
@@ -135,49 +215,12 @@ public class Entity : MonoBehaviour, IDamageable
     }
 
 
-    public float PunchDamage()
-    {
-        float baseDmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
-        return boostDamage2xActive ? baseDmg * 2f : baseDmg;
-    }
-
-
-    public float PunchKnockback()
-    {
-        float baseKb = 1280f * Mathf.Sqrt(stats.mass) / 7f;
-        return baseKb;
-    }
-
-
-    public bool CanPunch() => Time.time >= _lastPunchTime + punchCooldown;
-    //public void PerformPunch()
-    //{
-    //    if (!CanPunch()) return;
-    //    _lastPunchTime = Time.time;
-
-
-    //    float range = Radius + punchRangeExtra;
-    //    var hits = Physics2D.OverlapCircleAll(transform.position, range, LayerMask.GetMask("Characters"));
-    //    foreach (var h in hits)
-    //    {
-    //        if (h.attachedRigidbody == rb) continue;
-    //        var other = h.GetComponent<Entity>();
-    //        if (!other) continue;
-    //        if (GameManager.Instance.IsFriendly(this, other)) continue;
-
-
-    //        // apply damage & knockback
-    //        other.TakeDamage(PunchDamage(), this);
-    //        Vector2 dir = (other.transform.position - transform.position).normalized;
-    //        other.rb.AddForce(dir * PunchKnockback(), ForceMode2D.Impulse);
-    //    }
-    //    AudioManager.PlaySFX("punch");
-    //    UIManager.Instance?.Shake();
-    //}
+   
 
 
     public void TakeDamage(float amount, Entity source)
     {
+        Debug.Log(gameObject.name + " took " + amount + " damage from " + (source ? source.gameObject.name : "unknown"));
         stats.hp -= amount;
         if (stats.hp <= 0f) Die(source);
     }
@@ -198,6 +241,8 @@ public class Entity : MonoBehaviour, IDamageable
         if (isPlayer)
         {
             GameManager.Instance.OnPlayerDied(this);
+            gameObject.SetActive(false);
+
         }
         else
         {
@@ -211,10 +256,10 @@ public class Entity : MonoBehaviour, IDamageable
         gameObject.SetActive(false);
         yield return new WaitForSeconds(2f);
         var s = GameManager.Instance.Config;
-        Initialize(GenerateName(), stats.team, s.baseHP, s.baseSpeed, s.baseMass);
-        transform.position = SpawnManager.Instance.RandomSpawnPosition();
-        stats.hp = stats.maxHP;
-        gameObject.SetActive(true);
+        //Initialize(GenerateName(), stats.team, s.baseHP, s.baseSpeed, s.baseMass);
+        //transform.position = SpawnManager.Instance.RandomSpawnPosition();
+        //stats.hp = stats.maxHP;
+        //gameObject.SetActive(true);
     }
 
 

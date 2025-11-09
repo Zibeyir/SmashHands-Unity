@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public GameMode mode = GameMode.Deathmatch;
     public Entity player;
     public List<Entity> bots = new List<Entity>();
+    public PlayerInputRouter input;
 
 
     TimeCounter _timer;

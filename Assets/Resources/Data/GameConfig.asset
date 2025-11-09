@@ -17,7 +17,7 @@ MonoBehaviour:
   arenaSize: {x: 500, y: 500}
   gridSpacing: 50
   baseHP: 100
-  baseSpeed: 9
+  baseSpeed: 7
   baseMass: 20
   playerPrefab: {fileID: 4865624633025556457, guid: e1825580a539fe741aae5e4530ceee30, type: 3}
   botPrefab: {fileID: 3672884068893331396, guid: db9f20b04fcada4428c66cf07173d8c3, type: 3}
@@ -25,9 +25,9 @@ MonoBehaviour:
   coinPrefab: {fileID: 4740998817288117008, guid: 884cc9097887c9a46835e9e1f034f909, type: 3}
   boostSpeedPrefab: {fileID: 3339578627975762476, guid: dd1ce83d4845d294c860367348f984be, type: 3}
   boostBeat2xPrefab: {fileID: 4334779387980959601, guid: 733e0b3f8d9604948b202efc736a6f53, type: 3}
-  startXPOrbs: 80
+  startXPOrbs: 500
   startCoins: 30
-  startBoosts: 8
+  startBoosts: 20
   levelHandSprites:
   - {fileID: -2774552261298852055, guid: cf477d2f11a8bde4c9bd7182694a24fa, type: 3}
   - {fileID: 2070752126991230050, guid: 521cc4770933578419403d29dd8b9db6, type: 3}

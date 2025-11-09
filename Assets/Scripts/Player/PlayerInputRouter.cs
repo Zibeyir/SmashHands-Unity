@@ -1,42 +1,61 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
 
 
 public class PlayerInputRouter : MonoBehaviour
 {
-    public Joystick joystick;
+    public GameObject joystickObject;
 
+    public Joystick joystick;
+    public Button attackButton;
+    bool _attackButtonPressed;
 
     public Vector2 MoveAxis
     {
         get
         {
             Vector2 a = Vector2.zero;
-#if ENABLE_INPUT_SYSTEM
-            a.x = UnityEngine.InputSystem.Keyboard.current?.aKey.isPressed == true ? -1 : 0;
-            a.x += UnityEngine.InputSystem.Keyboard.current?.dKey.isPressed == true ? 1 : 0;
-            a.y = UnityEngine.InputSystem.Keyboard.current?.sKey.isPressed == true ? -1 : 0;
-            a.y += UnityEngine.InputSystem.Keyboard.current?.wKey.isPressed == true ? 1 : 0;
-#else
-a.x = Input.GetAxisRaw("Horizontal");
-a.y = Input.GetAxisRaw("Vertical");
-#endif
+            a.x = Input.GetAxisRaw("Horizontal");
+            a.y = Input.GetAxisRaw("Vertical");
             if (joystick) a += joystick.Direction;
             return Vector2.ClampMagnitude(a, 1f);
         }
     }
+    void Start()
+    {
+        // Joystick və attack button setup
+        if (attackButton)
+            attackButton.onClick.AddListener(() => StartCoroutine(ButtonTap()));
 
+        // ✅ Platform yoxlanışı
+#if UNITY_ANDROID || UNITY_IOS
+    // Mobil cihazda joystick aktiv olsun
+    if (joystickObject)
+        joystickObject.SetActive(true);
+#else
+        // WebGL və ya PC-də joystick gizlət
+        if (joystickObject)
+            joystickObject.SetActive(false);
+#endif
+    }
+
+
+    IEnumerator ButtonTap()
+    {
+        _attackButtonPressed = true;
+        yield return null;
+        _attackButtonPressed = false;
+    }
 
     public bool PunchPressed
     {
         get
         {
-#if ENABLE_INPUT_SYSTEM
-            return UnityEngine.InputSystem.Mouse.current?.leftButton.wasPressedThisFrame == true;
-#else
-return Input.GetMouseButtonDown(0);
-#endif
+            return Input.GetMouseButtonDown(0) || _attackButtonPressed;
         }
     }
+
 
 
     public bool SpeedBoostPressed
@@ -46,7 +65,7 @@ return Input.GetMouseButtonDown(0);
 #if ENABLE_INPUT_SYSTEM
             return UnityEngine.InputSystem.Mouse.current?.rightButton.wasPressedThisFrame == true;
 #else
-return Input.GetMouseButtonDown(1);
+return Input.GetMouseButtonDown(0);
 #endif
         }
     }
