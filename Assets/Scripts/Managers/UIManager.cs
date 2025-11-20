@@ -84,7 +84,7 @@ public class UIManager : MonoBehaviour
 
 
         // leaderboard
-        var list = GameManager.Instance.Leaderboard.Top(8);
+        var list = GameManager.Instance.Leaderboard.Top(6);
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         int rank = 1;
         foreach (var e in list)
@@ -109,7 +109,12 @@ public class UIManager : MonoBehaviour
 
 
     public void OnClickPlayAgain() => GameManager.Instance.Restart();
-
+    public void OnContinueGame()
+    {
+        startScreen.SetActive(false);
+        hud.SetActive(true);
+        GameManager.Instance.ContinueGame();
+    }
 
     public void Shake() { /* add lightweight screenshake via animator */ }
 }

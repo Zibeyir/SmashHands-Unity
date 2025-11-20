@@ -24,10 +24,10 @@ public class Entity : MonoBehaviour, IDamageable
     private float attackRange = 3f;
     private float attackCooldown = 1.2f;
     private float attackDashForce = 20;
-    private float knockbackForce = 30f;
+    private float knockbackForce = 15f;
     private float _lastAttackTime;
-    [HideInInspector] public bool IsAttacking = false;
-    [HideInInspector] public bool IsApplyHit = false;
+    public bool IsAttacking = false;
+    public bool IsApplyHit = false;
 
     [Header("World UI")]
     public Slider attackBar;
@@ -166,7 +166,7 @@ public class Entity : MonoBehaviour, IDamageable
         float dashTime = 0.7f;         // nə qədər müddət irəli getsin
         float dashSpeed = attackDashForce;  // nə qədər güclü getsin
         float t = 0f;
-        rb.AddForce(dir * dashSpeed * 100f, ForceMode2D.Force);
+        rb.AddForce(dir * dashSpeed * 70f, ForceMode2D.Force);
         //Debug.Log("Attack "+(dir * dashSpeed * 2f));
         while (t < dashTime)
         {
@@ -188,10 +188,9 @@ public class Entity : MonoBehaviour, IDamageable
         float knock = knockbackForce * Mathf.Sqrt(stats.mass);
 
         // HP azaldır
-        other.TakeDamage(dmg, this);
+        other.TakeDamage(dmg, dir * knock, this);
 
         // 🔹 Vurulanı geriyə at
-        other.rb.AddForce(dir * knock, ForceMode2D.Impulse);
     }
 
     public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
@@ -199,9 +198,16 @@ public class Entity : MonoBehaviour, IDamageable
     {
         if (!GameManager.Instance.GameRunning) return;
         if (collision.collider == null) return;
-        if (!IsApplyHit) return;
+
         var other = collision.collider.GetComponent<Entity>();
         if (other == null) return;
+        //Vector2 dir = (other.gameObject.transform.position - transform.position).normalized;
+        //float knock = knockbackForce * Mathf.Sqrt(stats.mass);
+
+        //rb.AddForce(-dir * attackDashForce * 80f, ForceMode2D.Force);
+
+        if (!IsApplyHit) return;
+
         ApplyHit(other);
         //IsAttacking = false;
         // Damage yalnız əgər zərbə cooldown bitibsə
@@ -262,9 +268,11 @@ public class Entity : MonoBehaviour, IDamageable
 
 
 
-    public void TakeDamage(float amount, Entity source)
+    public void TakeDamage(float amount,Vector2 force, Entity source)
     {
         if (stats.team != Team.None && stats.team == source.stats.team) return; // dostu vurma
+        if (IsApplyHit) return;
+        rb.AddForce(force, ForceMode2D.Impulse);
 
         //Debug.Log(gameObject.name + " took " + amount + " damage from " + (source ? source.gameObject.name : "unknown"));
         stats.hp -= amount;
@@ -293,7 +301,7 @@ public class Entity : MonoBehaviour, IDamageable
             int coinsGain = Mathf.RoundToInt(5f + killer.stats.level * 1.5f);
             killer.AddXP(xpGain);
             killer.stats.coins += coinsGain;
-            attackTimeSliderFollowParent.SetActive(false);
+            if(attackTimeSliderFollowParent) attackTimeSliderFollowParent.SetActive(false);
             ParticlePool.Play(FXType.Die, transform.position);
         }
 
@@ -330,9 +338,13 @@ public class Entity : MonoBehaviour, IDamageable
     {
         transform.position = SpawnManager.Instance.RandomSpawnPosition();
         stats.hp = stats.maxHP;
-        attackTimeSliderFollowParent.SetActive(true);
-
+        if (attackTimeSliderFollowParent)  attackTimeSliderFollowParent.SetActive(true);
+        IsAttacking = false;
         Debug.Log($"{stats.playerName} respawned.");
     }
 
+    public void TakeDamage(float amount, System.Numerics.Vector2 force, Entity source)
+    {
+        throw new System.NotImplementedException();
+    }
 }

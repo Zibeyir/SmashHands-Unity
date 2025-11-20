@@ -5,7 +5,7 @@ public class XPOrb : Collectible
     public float baseXP = 10f;
 
     [Header("Random Settings")]
-    Vector2 randomScaleRange = new Vector2(0.3f, 0.6f);
+    Vector2 randomScaleRange = new Vector2(0.3f, 0.8f);
     public Color[] possibleColors;
 
     private float xpAmount;

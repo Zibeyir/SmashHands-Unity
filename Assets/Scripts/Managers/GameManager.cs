@@ -163,7 +163,10 @@ public class GameManager : MonoBehaviour
         EndMatch();
     }
 
-
+    public void ContinueGame()
+    {
+        player.Respawn();
+    }
     public bool IsFriendly(Entity a, Entity b)
     {
         if (mode != GameMode.TeamArena) return false;
