@@ -63,10 +63,11 @@ public class PlayerInputRouter : MonoBehaviour
         get
         {
 #if ENABLE_INPUT_SYSTEM
-            return UnityEngine.InputSystem.Mouse.current?.rightButton.wasPressedThisFrame == true;
+            return UnityEngine.InputSystem.Mouse.current?.rightButton.isPressed == true;
 #else
-return Input.GetMouseButtonDown(0);
+        return Input.GetMouseButton(1); // SAĞ Mouse
 #endif
         }
     }
+
 }

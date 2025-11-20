@@ -18,10 +18,14 @@ public class BotController : MonoBehaviour
     // Tənzimlənən parametrlər (balans üçün)
     [Header("AI Settings")]
     private float visionRange = 3f;        // düşməni hiss etmə məsafəsi
-    private float attackDistance = 2.8f;    // hücum məsafəsi
+    private float attackDistance = 2;    // hücum məsafəsi
     private float decisionIntervalMin = 0.4f;
     private float decisionIntervalMax = 1.2f;
     private float randomMoveRadius = 6f;
+
+    bool doAttackDecision;
+    public float dist;
+    Vector2 dir;
 
     void Awake()
     {
@@ -54,15 +58,28 @@ public class BotController : MonoBehaviour
     {
         // Ən yaxın düşməni tap
         var enemy = GameManager.Instance.FindNearestEnemy(entity, visionRange * entity.Radius);
-        bool doAttackDecision = Random.value > 0.5f; // hər dəfə vurmaya bilər
-
-        if (enemy && Random.value > 0.25f) // 75% ehtimalla düşmənə fokus olur
+        doAttackDecision = Random.value > 0.5f; // hər dəfə vurmaya bilər
+        if (enemy) dist = Vector2.Distance(transform.position, enemy.position) - transform.localScale.x-enemy.localScale.x;
+        if (enemy && enemy.GetComponent<Entity>().isPlayer && dist <= 3)
         {
-            float dist = Vector2.Distance(transform.position, enemy.position);
-            Vector2 dir = (enemy.position - transform.position).normalized;
+            dir = (enemy.position - transform.position).normalized;
+            moveDir = dir;
+
+            entity.TryAttack();
+        }
+        else if (enemy && dist <= attackDistance * .7f)
+        {
+            dir = (enemy.position - transform.position).normalized;
+            moveDir = dir;
+
+            entity.TryAttack();
+        }
+        else if(enemy && Random.value > 0.25f) // 75% ehtimalla düşmənə fokus olur
+        {
+            dir = (enemy.position - transform.position).normalized;
 
             // çox yaxındırsa bir az uzaqlaşsın
-            if (dist < attackDistance * 0.6f)
+            if (dist < attackDistance )
             {
                 moveDir = -dir;
                 currentDecisionDuration = Random.Range(0.3f, 0.6f);
@@ -80,6 +97,7 @@ public class BotController : MonoBehaviour
             moveDir = dir;
             currentDecisionDuration = Random.Range(0.5f, 1.2f);
         }
+       
         else
         {
             // heç kim yoxdursa və ya random qərarla başqa yerə getsin

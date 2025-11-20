@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
+using TMPro;
 
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -11,7 +12,8 @@ public class Entity : MonoBehaviour, IDamageable
     public Rigidbody2D rb;
     public CircleCollider2D bodyCollider;
     public Hitbox punchHitbox; // child object, disabled by default
-
+    public AttackTimeSliderFollow attackTimeSliderFollow;
+    public GameObject attackTimeSliderFollowParent;
     string GenerateName() => $"Bot_{Random.Range(100, 999)}";
 
     [Header("State")]
@@ -24,10 +26,12 @@ public class Entity : MonoBehaviour, IDamageable
     private float attackDashForce = 20;
     private float knockbackForce = 30f;
     private float _lastAttackTime;
-    [HideInInspector] public bool IsAttacking=false;
+    [HideInInspector] public bool IsAttacking = false;
+    [HideInInspector] public bool IsApplyHit = false;
 
     [Header("World UI")]
-    public Slider attackBar;    // Prefab üzərindən bağlanacaq
+    public Slider attackBar;
+    public TextMeshProUGUI nameText;    // Prefab üzərindən bağlanacaq
     private Coroutine _attackRoutine;
 
     [Header("Runtime")]
@@ -49,6 +53,7 @@ public class Entity : MonoBehaviour, IDamageable
     public virtual void Initialize(string name, Team team, float baseHP, float baseSpeed, float baseMass)
     {
         stats.playerName = name;
+        nameText.text = name;
         stats.team = team;
         stats.hp = baseHP;
         stats.maxHP = baseHP;
@@ -56,7 +61,30 @@ public class Entity : MonoBehaviour, IDamageable
         stats.mass = baseMass;
         stats.level = 1;
         stats.xp = 0f;
+        transform.SetParent(GameManager.Instance.PlayersParents);
+
         UpdateRadius();
+        TeamNameColor();
+    }
+
+    private void TeamNameColor()
+    {
+        switch (stats.team)
+        {
+            case Team.None:
+                nameText.color = Color.white;
+                break;
+            case Team.Red:
+                nameText.color = Color.red;
+                break;
+            case Team.Blue:
+                nameText.color = Color.blue;
+                break;
+
+            default:
+                nameText.color = Color.white;
+                break;
+        }
     }
 
     public void TryAttack()
@@ -92,6 +120,7 @@ public class Entity : MonoBehaviour, IDamageable
     IEnumerator AttackRoutine()
     {
         IsAttacking = true;
+        IsApplyHit = true;
         // Ən yaxın düşməni tap
         var target = GameManager.Instance.FindNearestEnemy(this, attackRange);
 
@@ -109,7 +138,7 @@ public class Entity : MonoBehaviour, IDamageable
 
         // 🔹 Hər halda bir az qabağa getsin (dash effekti)
         StartCoroutine(DashForward(dir));
-
+        AudioManager.Instance.PlaySFX(SoundEnum.punch, transform);
         yield return new WaitForSeconds(0.05f); // zərbə anı
 
         // Əgər target var və məsafə uyğundursa, vur
@@ -126,9 +155,10 @@ public class Entity : MonoBehaviour, IDamageable
             //}
         }
 
-        AudioManager.PlaySFX("punch");
+
         yield return new WaitForSeconds(0.6f); // qısa animasiya vaxtı
         IsAttacking = false;
+        IsApplyHit = false;
     }
 
     IEnumerator DashForward(Vector2 dir)
@@ -136,8 +166,8 @@ public class Entity : MonoBehaviour, IDamageable
         float dashTime = 0.7f;         // nə qədər müddət irəli getsin
         float dashSpeed = attackDashForce;  // nə qədər güclü getsin
         float t = 0f;
-        rb.AddForce(dir * dashSpeed * 2f, ForceMode2D.Impulse);
-        Debug.Log("Attack "+(dir * dashSpeed * 2f));
+        rb.AddForce(dir * dashSpeed * 100f, ForceMode2D.Force);
+        //Debug.Log("Attack "+(dir * dashSpeed * 2f));
         while (t < dashTime)
         {
             //rb.linearVelocity = dir * dashSpeed;
@@ -151,6 +181,7 @@ public class Entity : MonoBehaviour, IDamageable
     void ApplyHit(Entity other)
     {
         Vector2 dir = (other.gameObject.transform.position - transform.position).normalized;
+        IsApplyHit = false;
 
         // Zərbə gücü səviyyəyə görə
         float dmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
@@ -160,7 +191,7 @@ public class Entity : MonoBehaviour, IDamageable
         other.TakeDamage(dmg, this);
 
         // 🔹 Vurulanı geriyə at
-        other.rb.AddForce(dir * knock*2f, ForceMode2D.Impulse);
+        other.rb.AddForce(dir * knock, ForceMode2D.Impulse);
     }
 
     public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
@@ -168,11 +199,11 @@ public class Entity : MonoBehaviour, IDamageable
     {
         if (!GameManager.Instance.GameRunning) return;
         if (collision.collider == null) return;
-        if (!IsAttacking) return;
+        if (!IsApplyHit) return;
         var other = collision.collider.GetComponent<Entity>();
         if (other == null) return;
-
         ApplyHit(other);
+        //IsAttacking = false;
         // Damage yalnız əgər zərbə cooldown bitibsə
 
     }
@@ -182,6 +213,8 @@ public class Entity : MonoBehaviour, IDamageable
     {
         //if (bodyCollider) bodyCollider.radius = Radius * 0.01f; // scale to pixels->meters if sprites are pixels
         transform.localScale = Vector3.one * (Radius / 16f);
+        attackTimeSliderFollow.GetOffset(transform.localScale.x);
+        //bodyCollider.radius = transform.localScale.x;
     }
 
 
@@ -204,7 +237,9 @@ public class Entity : MonoBehaviour, IDamageable
         stats.mass += 10f + stats.level * 2f;
         stats.hp = Mathf.Min(stats.maxHP, stats.hp + 20f);
         UpdateRadius();
-        AudioManager.PlaySFX("levelup");
+        ParticlePool.Play(FXType.LevelUp, transform,true);
+
+        if (isPlayer) AudioManager.Instance.PlaySFX(SoundEnum.levelup, transform);
         UIManager.Instance?.OnLevelChanged(this);
         UpdateVisual();
     }
@@ -216,7 +251,7 @@ public class Entity : MonoBehaviour, IDamageable
 
         int idx = Mathf.Clamp(stats.level - 1, 0, cfg.levelHandSprites.Length - 1);
 
-  
+
 
         // Əl sprite (əgər varsa)
         if (handRenderer && cfg.levelHandSprites != null && idx < cfg.levelHandSprites.Length && cfg.levelHandSprites[idx])
@@ -224,18 +259,33 @@ public class Entity : MonoBehaviour, IDamageable
     }
 
 
-   
+
 
 
     public void TakeDamage(float amount, Entity source)
     {
-        Debug.Log(gameObject.name + " took " + amount + " damage from " + (source ? source.gameObject.name : "unknown"));
+        if (stats.team != Team.None && stats.team == source.stats.team) return; // dostu vurma
+
+        //Debug.Log(gameObject.name + " took " + amount + " damage from " + (source ? source.gameObject.name : "unknown"));
         stats.hp -= amount;
-        if (stats.hp <= 0f) Die(source);
+        if (stats.hp <= 0f)
+        {
+            AudioManager.Instance.PlaySFX(SoundEnum.die, transform);
+
+            Die(source);
+        }
+        else
+        {
+            AudioManager.Instance.PlaySFX(SoundEnum.damage, transform);
+
+            ParticlePool.Play(FXType.Damage, transform.position);
+
+        }
+
     }
     void Die(Entity killer)
     {
-        Debug.Log($"{stats.playerName} died."+ gameObject.name);
+        //Debug.Log($"{stats.playerName} died."+ gameObject.name);
         // rewards
         if (killer)
         {
@@ -243,6 +293,8 @@ public class Entity : MonoBehaviour, IDamageable
             int coinsGain = Mathf.RoundToInt(5f + killer.stats.level * 1.5f);
             killer.AddXP(xpGain);
             killer.stats.coins += coinsGain;
+            attackTimeSliderFollowParent.SetActive(false);
+            ParticlePool.Play(FXType.Die, transform.position);
         }
 
 
@@ -255,21 +307,32 @@ public class Entity : MonoBehaviour, IDamageable
         }
         else
         {
-            StartCoroutine(RespawnBotRoutine());
+            GameManager.Instance.StartDieBot(this);
+
         }
     }
-
-
-    IEnumerator RespawnBotRoutine()
+    public bool ConsumeXP(float amount)
     {
-        gameObject.SetActive(false);
-        yield return new WaitForSeconds(2f);
-        var s = GameManager.Instance.Config;
-        //Initialize(GenerateName(), stats.team, s.baseHP, s.baseSpeed, s.baseMass);
-        //transform.position = SpawnManager.Instance.RandomSpawnPosition();
-        //stats.hp = stats.maxHP;
-        //gameObject.SetActive(true);
+        if (stats.xp <= 0f)
+        {
+            stats.xp = 0f;
+            return false; // XP yoxdur → boost dayansın
+        }
+
+        stats.xp -= amount;
+        if (stats.xp < 0f) stats.xp = 0f;
+        return true;
     }
 
+
+   
+    public void Respawn()
+    {
+        transform.position = SpawnManager.Instance.RandomSpawnPosition();
+        stats.hp = stats.maxHP;
+        attackTimeSliderFollowParent.SetActive(true);
+
+        Debug.Log($"{stats.playerName} respawned.");
+    }
 
 }

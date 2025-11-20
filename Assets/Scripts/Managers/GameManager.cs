@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 
 
 public class GameManager : MonoBehaviour
@@ -20,6 +22,10 @@ public class GameManager : MonoBehaviour
     public List<Entity> bots = new List<Entity>();
     public PlayerInputRouter input;
 
+    [Header("Parents")]
+    public Transform CollectibleParent;
+    public Transform PlayersParents;
+    public Transform ParticleParents;
 
     TimeCounter _timer;
     int _sessionCoinsAward;
@@ -79,8 +85,9 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            var o = Instantiate(prefab);
+            GameObject o = Instantiate(prefab);
             o.transform.position = SpawnManager.Instance.RandomSpawnPosition();
+            o.transform.SetParent(CollectibleParent);
         }
     }
 
@@ -204,14 +211,27 @@ public class GameManager : MonoBehaviour
     // Boosts
     public System.Collections.IEnumerator ApplyTimedDamageBoost(Entity target, float seconds)
     {
+
         target.boostDamage2xActive = true;
         yield return new WaitForSeconds(seconds);
         target.boostDamage2xActive = false;
     }
 
-
+    public void StartDieBot(Entity entity)
+    {
+        StartCoroutine(RespawnBotRoutine(entity));
+    }
+    IEnumerator RespawnBotRoutine(Entity entity)
+    {
+        entity.gameObject.SetActive(false);
+        yield return new WaitForSeconds(2f);
+        entity.gameObject.SetActive(true);
+        Debug.Log("Respawning bot: " + entity.gameObject.name);
+        entity.Respawn();
+    }
     public System.Collections.IEnumerator ApplyTimedSpeedBoost(Entity target, float seconds)
     {
+
         target.boostSpeed2xActive = true;
         yield return new WaitForSeconds(seconds);
         target.boostSpeed2xActive = false;

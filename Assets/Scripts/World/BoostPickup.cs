@@ -10,7 +10,6 @@ public class BoostPickup : Collectible
     {
         var e = other.GetComponent<Entity>();
         if (!e) return;
-        Debug.Log($"{e.stats.playerName} triggered boost pickup: {data.type}");
         ApplyBoost(e);
         OnCollected(e);
     }
@@ -21,9 +20,13 @@ public class BoostPickup : Collectible
         switch (data.type)
         {
             case BoostType.Speed:
+                if (target.isPlayer) AudioManager.Instance.PlaySFX(SoundEnum.speed, transform);
                 GameManager.Instance.StartCoroutine(GameManager.Instance.ApplyTimedSpeedBoost(target, data.durationSeconds));
+
                 break;
             case BoostType.Beat2x:
+                if (target.isPlayer) AudioManager.Instance.PlaySFX(SoundEnum.x2punch, transform);
+
                 GameManager.Instance.StartCoroutine(GameManager.Instance.ApplyTimedDamageBoost(target, data.durationSeconds));
                 break;
         }

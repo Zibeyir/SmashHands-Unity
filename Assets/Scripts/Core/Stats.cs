@@ -13,7 +13,7 @@ public class Stats
     public float xp = 0f;
     public int level = 1;
     public float mass = 20f;
-    public float speed = 9f;
+    public float speed = 11f;
 
 
     public int coins = 0;

@@ -13,7 +13,7 @@ public abstract class Collectible : MonoBehaviour
     {
         if (!_available) return;
         _available = false;
-        Debug.Log($"{by.stats.playerName} collected {gameObject.name}");
+        //Debug.Log($"{by.stats.playerName} collected {gameObject.name}");
         gameObject.SetActive(false);
         Invoke(nameof(Respawn), respawnDelay);
     }
@@ -22,6 +22,7 @@ public abstract class Collectible : MonoBehaviour
     public virtual void Respawn()
     {
         transform.position = SpawnManager.Instance.RandomSpawnPosition();
+        transform.SetParent(GameManager.Instance.CollectibleParent);
         _available = true;
         gameObject.SetActive(true);
     }

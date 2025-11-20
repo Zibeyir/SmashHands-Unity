@@ -11,6 +11,8 @@ public class CoinPickup : Collectible
         var e = other.GetComponent<Entity>();
         if (!e) return;
         e.stats.coins += amount;
+        if (e.isPlayer) AudioManager.Instance.PlaySFX(SoundEnum.coin, transform);
+
         OnCollected(e);
     }
 }
