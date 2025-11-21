@@ -6,14 +6,14 @@ public class GameConfig : ScriptableObject
 {
     [Header("Match")]
     public float matchDurationSeconds = 15 * 60f; // 15 minutes
-    public int initialBotCount = 12;
-    public Vector2 arenaSize = new Vector2(3000, 3000);
-    public float gridSpacing = 80f;
+    public int initialBotCount = 60;
+    public Vector2 arenaSize = new Vector2(350, 350);
+    public float gridSpacing = 50f;
 
 
     [Header("Player Base Stats")]
-    public float baseHP = 100f;
-    public float baseSpeed = 9f;
+    public float baseHP = 300;
+    public float baseSpeed = 12;
     public float baseMass = 20f;
 
 
@@ -27,9 +27,9 @@ public class GameConfig : ScriptableObject
 
 
     [Header("Spawning")]
-    public int startXPOrbs = 80;
+    public int startXPOrbs = 2000;
     public int startCoins = 30;
-    public int startBoosts = 8;
+    public int startBoosts = 20;
 
     [Header("Visuals (shared by all entities)")]
     public Sprite[] levelHandSprites;  // əl / silah şəkilləri (istəyə görə)

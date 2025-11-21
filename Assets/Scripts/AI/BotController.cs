@@ -60,21 +60,21 @@ public class BotController : MonoBehaviour
         var enemy = GameManager.Instance.FindNearestEnemy(entity, visionRange * entity.Radius);
         doAttackDecision = Random.value > 0.5f; // hər dəfə vurmaya bilər
         if (enemy) dist = Vector2.Distance(transform.position, enemy.position) - transform.localScale.x-enemy.localScale.x;
-        if (enemy && enemy.GetComponent<Entity>().isPlayer && dist <= 3)
+        if (!entity.IsAttacking && enemy && enemy.GetComponent<Entity>().isPlayer && dist <= 4)
         {
             dir = (enemy.position - transform.position).normalized;
             moveDir = dir;
 
             entity.TryAttack();
         }
-        else if (enemy && dist <= attackDistance * .7f)
+        else if (!entity.IsAttacking && enemy && dist <= attackDistance * .7f)
         {
             dir = (enemy.position - transform.position).normalized;
             moveDir = dir;
 
             entity.TryAttack();
         }
-        else if(enemy && Random.value > 0.25f) // 75% ehtimalla düşmənə fokus olur
+        else if(!entity.IsAttacking && enemy && Random.value > 0.25f) // 75% ehtimalla düşmənə fokus olur
         {
             dir = (enemy.position - transform.position).normalized;
 

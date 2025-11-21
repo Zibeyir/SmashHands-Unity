@@ -23,8 +23,8 @@ public class Entity : MonoBehaviour, IDamageable
     [Header("Attack Settings")]
     private float attackRange = 3f;
     private float attackCooldown = 1.2f;
-    private float attackDashForce = 20;
-    private float knockbackForce = 15f;
+    private float attackDashForce = 16;
+    private float knockbackForce = 9f;
     private float _lastAttackTime;
     public bool IsAttacking = false;
     public bool IsApplyHit = false;
@@ -39,6 +39,9 @@ public class Entity : MonoBehaviour, IDamageable
     public bool boostSpeed2xActive;
 
     public SpriteRenderer handRenderer;
+
+    [SerializeField] TrailRenderer[] attackTrailRenderer;
+    Material[] attackTrailMats;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -121,52 +124,44 @@ public class Entity : MonoBehaviour, IDamageable
     {
         IsAttacking = true;
         IsApplyHit = true;
-        // Ən yaxın düşməni tap
-        var target = GameManager.Instance.FindNearestEnemy(this, attackRange);
 
-        Vector2 dir = Vector2.zero;
+        // target olmasa belə, həmişə önə vuracaq
+        Vector2 dir = transform.right;
 
-        if (target)
-        {
-            dir = transform.right; // rotation yönü ilə eyni (sprite up istiqaməti)
-        }
-        else
-        {
-            // 🧭 Əgər düşmən yoxdursa, son baxdığı və ya hərəkət etdiyi istiqamətdə hücum etsin
-            dir = transform.right; // rotation yönü ilə eyni (sprite up istiqaməti)
-        }
-
-        // 🔹 Hər halda bir az qabağa getsin (dash effekti)
+        // Dash
         StartCoroutine(DashForward(dir));
         AudioManager.Instance.PlaySFX(SoundEnum.punch, transform);
-        yield return new WaitForSeconds(0.05f); // zərbə anı
 
-        // Əgər target var və məsafə uyğundursa, vur
-        if (target)
+        // Zərbə anı
+        yield return new WaitForSeconds(0.05f);
+
+        // --- IO HIT DETECTION (tam stabil) ---
+        Vector2 hitPos = (Vector2)transform.position + (Vector2)transform.right * 0.8f;
+        float hitRadius = 0.9f;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, hitRadius);
+
+        foreach (var h in hits)
         {
-            bodyCollider.enabled = false;
-            bodyCollider.enabled = true;
-            //float dist = Vector2.Distance(transform.position, target.position);
-            //if (dist <= attackRange)
-            //{
-            //    var other = target.GetComponent<Entity>();
-            //    if (other && !GameManager.Instance.IsFriendly(this, other))
-            //        ApplyHit(other, dir);
-            //}
+            var e = h.GetComponent<Entity>();
+            if (e && e != this && !GameManager.Instance.IsFriendly(this, e))
+                ApplyHit(e);
         }
+        // --------------------------------------
 
+        yield return new WaitForSeconds(0.6f);
 
-        yield return new WaitForSeconds(0.6f); // qısa animasiya vaxtı
         IsAttacking = false;
         IsApplyHit = false;
     }
 
+
     IEnumerator DashForward(Vector2 dir)
     {
-        float dashTime = 0.7f;         // nə qədər müddət irəli getsin
+        float dashTime = 0.45f;         // nə qədər müddət irəli getsin
         float dashSpeed = attackDashForce;  // nə qədər güclü getsin
         float t = 0f;
-        rb.AddForce(dir * dashSpeed * 70f, ForceMode2D.Force);
+        rb.AddForce(dir * attackDashForce * 55f, ForceMode2D.Force);
         //Debug.Log("Attack "+(dir * dashSpeed * 2f));
         while (t < dashTime)
         {
@@ -180,18 +175,17 @@ public class Entity : MonoBehaviour, IDamageable
 
     void ApplyHit(Entity other)
     {
-        Vector2 dir = (other.gameObject.transform.position - transform.position).normalized;
+        if (other == null) return;
+
+        Vector2 dir = (other.transform.position - transform.position).normalized;
         IsApplyHit = false;
 
-        // Zərbə gücü səviyyəyə görə
-        float dmg = 16f * Mathf.Sqrt(stats.mass) / 7f;
-        float knock = knockbackForce * Mathf.Sqrt(stats.mass);
+        float dmg = (10f + stats.level * 2.5f) * Mathf.Sqrt(stats.mass / 18f);
+        float knock = knockbackForce * (0.7f + Mathf.Sqrt(stats.mass * 0.33f));
 
-        // HP azaldır
         other.TakeDamage(dmg, dir * knock, this);
-
-        // 🔹 Vurulanı geriyə at
     }
+
 
     public float Radius => 16f + Mathf.Sqrt(stats.mass) * 1.25f;
     void OnCollisionEnter2D(Collision2D collision)
@@ -239,9 +233,10 @@ public class Entity : MonoBehaviour, IDamageable
     void LevelUp()
     {
         stats.level++;
-        stats.maxHP += 20f + stats.level * 5f;
-        stats.mass += 10f + stats.level * 2f;
-        stats.hp = Mathf.Min(stats.maxHP, stats.hp + 20f);
+        stats.maxHP += 20f + stats.level * 2f;
+        stats.mass += 6f + stats.level * 1.5f;
+        stats.hp = stats.maxHP;
+
         UpdateRadius();
         ParticlePool.Play(FXType.LevelUp, transform,true);
 
@@ -280,7 +275,7 @@ public class Entity : MonoBehaviour, IDamageable
         {
             AudioManager.Instance.PlaySFX(SoundEnum.die, transform);
 
-            Die(source);
+            StartCoroutine(Die(source));
         }
         else
         {
@@ -291,8 +286,9 @@ public class Entity : MonoBehaviour, IDamageable
         }
 
     }
-    void Die(Entity killer)
+    IEnumerator  Die(Entity killer)
     {
+        yield return new WaitForSeconds(.3f);
         //Debug.Log($"{stats.playerName} died."+ gameObject.name);
         // rewards
         if (killer)

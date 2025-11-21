@@ -165,6 +165,7 @@ public class GameManager : MonoBehaviour
 
     public void ContinueGame()
     {
+        player.gameObject.SetActive(true);
         player.Respawn();
     }
     public bool IsFriendly(Entity a, Entity b)

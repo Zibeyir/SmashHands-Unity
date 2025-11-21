@@ -46,7 +46,7 @@ public class UIManager : MonoBehaviour
         mapDropdown.value = SaveSystem.LoadMap(0);
         teamDropdown.value = SaveSystem.LoadTeam(0);
         totalCoinsText.text = $"Total Coins: {SaveSystem.LoadTotalCoins()}";
-        teamDropdown.gameObject.SetActive(mapDropdown.value == 1);
+        //teamDropdown.gameObject.SetActive(mapDropdown.value == 1);
     }
 
 
@@ -111,6 +111,8 @@ public class UIManager : MonoBehaviour
     public void OnClickPlayAgain() => GameManager.Instance.Restart();
     public void OnContinueGame()
     {
+        endScreen.SetActive(false);
+
         startScreen.SetActive(false);
         hud.SetActive(true);
         GameManager.Instance.ContinueGame();
