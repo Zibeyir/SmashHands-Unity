@@ -172,6 +172,7 @@ MonoBehaviour:
   bodyCollider: {fileID: 8953765389655389683}
   punchHitbox: {fileID: 0}
   attackTimeSliderFollow: {fileID: 1678170802048406040}
+  attackTimeSliderFollowParent: {fileID: 0}
   stats:
     playerName: Player
     team: 0
@@ -190,6 +191,11 @@ MonoBehaviour:
   boostDamage2xActive: 0
   boostSpeed2xActive: 0
   handRenderer: {fileID: 0}
+  attackTrailRenderer:
+  - {fileID: 2604559864274262030}
+  - {fileID: 8042849596375306486}
+  - {fileID: 8414583262914522933}
+  - {fileID: 3226700163935152434}
 --- !u!114 &3294013460199288994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,8 +418,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+--- !u!96 &2604559864274262030 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 5868497376862081519, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 8454477096648149473}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &3226700163935152434 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 6454745219826917587, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 8454477096648149473}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6870710095201689457 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3030355536098645648, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 8454477096648149473}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &8042849596375306486 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 1930257776391198999, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 8454477096648149473}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &8414583262914522933 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 113378087211902676, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
   m_PrefabInstance: {fileID: 8454477096648149473}
   m_PrefabAsset: {fileID: 0}

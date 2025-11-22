@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
     public void EndMatch()
     {
         // Compute team or player ranking
-        string summary = BuildSummary();
+        string summary = BuildSummary(true);
 
 
         // Save coins
@@ -119,11 +119,24 @@ public class GameManager : MonoBehaviour
 
         UIManager.Instance.ShowEnd(summary);
     }
-
-
-    string BuildSummary()
+    public void DieMatch()
     {
-        var top = Leaderboard.Top(10);
+        // Compute team or player ranking
+        string summary = BuildSummary();
+
+
+        // Save coins
+        int total = SaveSystem.LoadTotalCoins();
+        total += Mathf.Max(0, _sessionCoinsAward + player.stats.coins);
+        SaveSystem.SaveTotalCoins(total);
+
+
+        UIManager.Instance.ShowDie(summary);
+    }
+
+    string BuildSummary(bool End = false)
+    {
+        var top = Leaderboard.Top(6);
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.AppendLine("Results (by Mass):");
         int rank = 1;
@@ -134,7 +147,7 @@ public class GameManager : MonoBehaviour
         }
 
 
-        if (mode == GameMode.TeamArena)
+        if (End && mode == GameMode.TeamArena)
         {
             float red = 0f, blue = 0f;
             foreach (var e in top)
@@ -160,7 +173,7 @@ public class GameManager : MonoBehaviour
     public void OnPlayerDied(Entity e)
     {
         // For v1.0, end immediately; alternative: respawn UI
-        EndMatch();
+        DieMatch();
     }
 
     public void ContinueGame()
@@ -233,7 +246,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Respawning bot: " + entity.gameObject.name);
         entity.Respawn();
     }
-    public System.Collections.IEnumerator ApplyTimedSpeedBoost(Entity target, float seconds)
+    public IEnumerator ApplyTimedSpeedBoost(Entity target, float seconds)
     {
 
         target.boostSpeed2xActive = true;

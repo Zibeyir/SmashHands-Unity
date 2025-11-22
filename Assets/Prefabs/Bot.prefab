@@ -191,6 +191,11 @@ MonoBehaviour:
   boostDamage2xActive: 0
   boostSpeed2xActive: 0
   handRenderer: {fileID: 0}
+  attackTrailRenderer:
+  - {fileID: 550211833043704443}
+  - {fileID: 5483711726092276355}
+  - {fileID: 6287417879120866624}
+  - {fileID: 1099007426894195527}
 --- !u!114 &7231197566223975861
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -430,6 +435,26 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+--- !u!96 &550211833043704443 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 5868497376862081519, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 6256531201555975060}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &1099007426894195527 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 6454745219826917587, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 6256531201555975060}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &5483711726092276355 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 1930257776391198999, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 6256531201555975060}
+  m_PrefabAsset: {fileID: 0}
+--- !u!96 &6287417879120866624 stripped
+TrailRenderer:
+  m_CorrespondingSourceObject: {fileID: 113378087211902676, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+  m_PrefabInstance: {fileID: 6256531201555975060}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8997723351252737284 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3030355536098645648, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}

@@ -13,6 +13,7 @@ public class UIManager : MonoBehaviour
     public GameObject startScreen;
     public GameObject hud;
     public GameObject endScreen;
+    public GameObject dieScreen;
 
 
     [Header("Start UI")]
@@ -34,12 +35,15 @@ public class UIManager : MonoBehaviour
     [Header("End")]
     public TMP_Text resultText;
 
+    [Header("Die")]
+    public TMP_Text resultDieText;
 
     public void InitStart()
     {
         startScreen.SetActive(true);
         hud.SetActive(false);
         endScreen.SetActive(false);
+        dieScreen.SetActive(false);
 
 
         nameInput.text = SaveSystem.LoadName("Player");
@@ -66,6 +70,7 @@ public class UIManager : MonoBehaviour
         var gm = GameManager.Instance;
         gm.BeginMatch((GameMode)mapDropdown.value, (Team)teamDropdown.value, nameInput.text);
 
+        dieScreen.SetActive(false);
 
         startScreen.SetActive(false);
         hud.SetActive(true);
@@ -102,16 +107,26 @@ public class UIManager : MonoBehaviour
 
     public void ShowEnd(string summary)
     {
+        dieScreen.SetActive(false);
+
         hud.SetActive(false);
         endScreen.SetActive(true);
         resultText.text = summary;
     }
+    public void ShowDie(string summary)
+    {
+        dieScreen.SetActive(true);
 
+        hud.SetActive(false);
+        endScreen.SetActive(false);
+        resultDieText.text = summary;
+    }
 
     public void OnClickPlayAgain() => GameManager.Instance.Restart();
     public void OnContinueGame()
     {
         endScreen.SetActive(false);
+        dieScreen.SetActive(false);
 
         startScreen.SetActive(false);
         hud.SetActive(true);

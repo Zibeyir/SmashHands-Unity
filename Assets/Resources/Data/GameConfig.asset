@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af41c9c26753e8b48b350f09db7be331, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  matchDurationSeconds: 900
+  matchDurationSeconds: 100
   initialBotCount: 60
-  arenaSize: {x: 350, y: 350}
-  gridSpacing: 50
-  baseHP: 30
-  baseSpeed: 12
-  baseMass: 20
+  arenaSize: {x: 298, y: 298}
+  gridSpacing: 30
+  baseHP: 120
+  baseSpeed: 10
+  baseMass: 14
   playerPrefab: {fileID: 4865624633025556457, guid: e1825580a539fe741aae5e4530ceee30, type: 3}
   botPrefab: {fileID: 3672884068893331396, guid: db9f20b04fcada4428c66cf07173d8c3, type: 3}
   xpOrbPrefab: {fileID: 5089729149011861035, guid: 7b7d91388fb6dc74f99435eba19468b5, type: 3}

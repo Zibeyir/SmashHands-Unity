@@ -41,13 +41,26 @@ public class Entity : MonoBehaviour, IDamageable
     public SpriteRenderer handRenderer;
 
     [SerializeField] TrailRenderer[] attackTrailRenderer;
-    Material[] attackTrailMats;
+    [SerializeField]  Material[] attackTrailMats;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CircleCollider2D>();
         handRenderer = GetComponent<SpriteRenderer>();
+
+        attackTrailMats = new Material[attackTrailRenderer.Length];
+
+        for (int i = 0; i < attackTrailRenderer.Length; i++)
+        {
+            if (attackTrailRenderer[i] != null)
+            {
+                // MATERIAL COPY
+                attackTrailMats[i] = new Material(attackTrailRenderer[i].material);
+                attackTrailRenderer[i].material = attackTrailMats[i];
+            }
+        }
     }
+
     void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -87,6 +100,16 @@ public class Entity : MonoBehaviour, IDamageable
             default:
                 nameText.color = Color.white;
                 break;
+        }
+    }
+    void SetTrailColor(Color c)
+    {
+        if (attackTrailMats == null) return;
+
+        for (int i = 0; i < attackTrailMats.Length; i++)
+        {
+            if (attackTrailMats[i] != null && attackTrailMats[i].HasProperty("_Color"))
+                attackTrailMats[i].SetColor("_Color", c);
         }
     }
 
@@ -131,6 +154,7 @@ public class Entity : MonoBehaviour, IDamageable
         // Dash
         StartCoroutine(DashForward(dir));
         AudioManager.Instance.PlaySFX(SoundEnum.punch, transform);
+        SetTrailColor(Color.blue);
 
         // Zərbə anı
         yield return new WaitForSeconds(0.05f);
@@ -150,6 +174,7 @@ public class Entity : MonoBehaviour, IDamageable
         // --------------------------------------
 
         yield return new WaitForSeconds(0.6f);
+        SetTrailColor(Color.white);
 
         IsAttacking = false;
         IsApplyHit = false;
@@ -268,6 +293,8 @@ public class Entity : MonoBehaviour, IDamageable
         if (stats.team != Team.None && stats.team == source.stats.team) return; // dostu vurma
         if (IsApplyHit) return;
         rb.AddForce(force, ForceMode2D.Impulse);
+        SetTrailColor(Color.red);
+        StartCoroutine(ResetTrailColor());
 
         //Debug.Log(gameObject.name + " took " + amount + " damage from " + (source ? source.gameObject.name : "unknown"));
         stats.hp -= amount;
@@ -328,8 +355,13 @@ public class Entity : MonoBehaviour, IDamageable
         return true;
     }
 
+    IEnumerator ResetTrailColor()
+    {
+        yield return new WaitForSeconds(0.25f);
+        SetTrailColor(Color.white);
+    }
 
-   
+
     public void Respawn()
     {
         transform.position = SpawnManager.Instance.RandomSpawnPosition();
