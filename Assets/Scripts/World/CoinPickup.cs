@@ -3,7 +3,7 @@
 
 public class CoinPickup : Collectible
 {
-    public int amount = 1;
+    int amount = 10;
 
 
     void OnTriggerEnter2D(Collider2D other)

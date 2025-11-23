@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
@@ -42,6 +42,10 @@ public class GameManager : MonoBehaviour
         mode = gm;
         bots.Clear();
         _sessionCoinsAward = 0;
+
+        // 🔹 Hər matça başlayanda bot adlarını shuffle edirik
+        BotNameDatabase.ResetForNewMatch();
+
         // Spawn player
         var pObj = Instantiate(Config.playerPrefab);
         player = pObj.GetComponent<Entity>();
@@ -52,35 +56,44 @@ public class GameManager : MonoBehaviour
 
         var camFollow = Camera.main.GetComponent<CameraFollow>();
         if (camFollow) camFollow.target = player.transform;
-        // Controller hookup
         var pc = pObj.GetComponent<PlayerController>();
         if (!pc) pc = pObj.AddComponent<PlayerController>();
-
 
         // Spawn bots
         for (int i = 0; i < Config.initialBotCount; i++)
         {
             var bObj = Instantiate(Config.botPrefab);
-            bObj.gameObject.name = $"Bot_{i}";
             var e = bObj.GetComponent<Entity>();
+
             e.transform.position = SpawnManager.Instance.RandomSpawnPosition();
+
             Team t = Team.None;
-            if (gm == GameMode.TeamArena) t = (i % 2 == 0) ? Team.Red : Team.Blue;
-            e.Initialize($"Bot_{100 + i}", t, Config.baseHP, Config.baseSpeed * Random.Range(0.9f, 1.1f), Config.baseMass);
+            if (gm == GameMode.TeamArena)
+                t = (i % 2 == 0) ? Team.Red : Team.Blue;
+
+            // 🔹 Burada random, təkrarsız real ad veririk
+            string botName = BotNameDatabase.GetNextName();
+            bObj.gameObject.name = botName;
+
+            e.Initialize(botName,
+                         t,
+                         Config.baseHP,
+                         Config.baseSpeed * Random.Range(0.9f, 1.1f),
+                         Config.baseMass);
+
             bots.Add(e);
             Leaderboard.Register(e);
         }
 
-
-        // Spawn pickups
+        // Spawn pickups...
         SpawnField(Config.xpOrbPrefab, Config.startXPOrbs);
         SpawnField(Config.coinPrefab, Config.startCoins);
         SpawnField(Config.boostSpeedPrefab, Config.startBoosts / 2);
         SpawnField(Config.boostBeat2xPrefab, Config.startBoosts / 2);
 
-
         _timer = new TimeCounter(Config.matchDurationSeconds);
     }
+
     void SpawnField(GameObject prefab, int count)
     {
         for (int i = 0; i < count; i++)
@@ -142,7 +155,7 @@ public class GameManager : MonoBehaviour
         int rank = 1;
         foreach (var e in top)
         {
-            sb.AppendLine($"#{rank} {e.stats.playerName} � {Mathf.RoundToInt(e.stats.mass)}");
+            sb.AppendLine($"#{rank} {e.stats.playerName} — {Mathf.RoundToInt(e.stats.mass)}");
             rank++;
         }
 

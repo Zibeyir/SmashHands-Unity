@@ -196,6 +196,7 @@ MonoBehaviour:
   - {fileID: 8042849596375306486}
   - {fileID: 8414583262914522933}
   - {fileID: 3226700163935152434}
+  attackTrailMats: []
 --- !u!114 &3294013460199288994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,6 +370,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8865700618931326788}
     m_Modifications:
+    - target: {fileID: 2763779470350673932, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3030355536098645648, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -408,6 +413,18 @@ PrefabInstance:
     - target: {fileID: 3030355536098645648, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5182775669348418397, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6067532466241970267, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7666744862974833920, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8616859132374884830, guid: 0aa0c047cd5511c4f8f3dd683a13a180, type: 3}
       propertyPath: m_Name

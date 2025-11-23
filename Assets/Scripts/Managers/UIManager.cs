@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
-    void Awake() { Instance = this; }
 
 
     [Header("Screens")]
@@ -30,6 +29,7 @@ public class UIManager : MonoBehaviour
     public TMP_Text levelText;
     public TMP_Text coinsText;
     public TMP_Text leaderboardText;
+    public Animation anim;
 
 
     [Header("End")]
@@ -38,6 +38,19 @@ public class UIManager : MonoBehaviour
     [Header("Die")]
     public TMP_Text resultDieText;
 
+    private int CoinCount=0;
+    void Awake()
+    {
+        Instance = this;
+        CoinCount = 0;
+    }
+
+  
+
+    public void StopSpin()
+    {
+        anim.Stop();
+    }
     public void InitStart()
     {
         startScreen.SetActive(true);
@@ -81,8 +94,12 @@ public class UIManager : MonoBehaviour
         hpBar.value = player.stats.hp / Mathf.Max(1f, player.stats.maxHP);
         xpBar.value = player.stats.xp / Mathf.Max(1f, player.RequiredXP());
         levelText.text = $"Lv.{player.stats.level}";
-        coinsText.text = $"Coins: {player.stats.coins}";
-
+        coinsText.text = $"Coins: +{10}";
+        if(CoinCount!=player.stats.coins)
+        {
+            CoinCount = player.stats.coins;
+            anim.Play("Coin Anime"); // Inspector-da yazılan klip adı
+        }
 
         var t = System.TimeSpan.FromSeconds(Mathf.CeilToInt(remainingSeconds));
         timerText.text = $"{t.Minutes:00}:{t.Seconds:00}";

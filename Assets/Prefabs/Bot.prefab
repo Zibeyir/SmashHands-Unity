@@ -196,6 +196,7 @@ MonoBehaviour:
   - {fileID: 5483711726092276355}
   - {fileID: 6287417879120866624}
   - {fileID: 1099007426894195527}
+  attackTrailMats: []
 --- !u!114 &7231197566223975861
 MonoBehaviour:
   m_ObjectHideFlags: 0
